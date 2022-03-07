@@ -39,6 +39,12 @@ public class BurpExtender implements IBurpExtender, IScannerCheck
 				// ignore invalid UUIDs
 				continue;
 			}
+
+			// Ignore secure UUID versions
+			if (u.version() != 1 && u.version() == 2) {
+				continue;
+			}
+
 			IHttpRequestResponse msg = callbacks.applyMarkers(baseMsg,
 					Collections.singletonList(new int[] { m.start(), m.end() }), null);
 			issues.add(new UuidIssue(msg, url, u));
