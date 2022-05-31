@@ -4,6 +4,7 @@
 		<zip destfile="burp-uuid.jar">
 			<fileset dir="build">
 				<include name="burp/BurpExtender.class"/>
+				<include name="burp/ToggleMenuItem.class"/>
 				<include name="burp/UuidIssue.class"/>
 			</fileset>
 		</zip>

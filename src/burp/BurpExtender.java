@@ -1,22 +1,32 @@
 package burp;
 
+import javax.swing.*;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.*;
 
-public class BurpExtender implements IBurpExtender, IScannerCheck
+public class BurpExtender implements IBurpExtender, IContextMenuFactory, IScannerCheck
 {
 	private IExtensionHelpers helpers;
 	private IBurpExtenderCallbacks callbacks;
 	private final static Pattern uuidPattern = Pattern.compile(
 			"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
 			Pattern.CASE_INSENSITIVE);
+	private final List<ToggleMenuItem> versionToggles = Arrays.asList(
+			new ToggleMenuItem("UUID Version 1", true),
+			new ToggleMenuItem("UUID Version 2", true),
+			new ToggleMenuItem("UUID Version 3", false),
+			new ToggleMenuItem("UUID Version 4", false),
+			new ToggleMenuItem("UUID Version 5", false),
+			new ToggleMenuItem("Unrecognized Versions", false)
+	);
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
 	{
 		callbacks.setExtensionName("UUID issues");
 		callbacks.registerScannerCheck(this);
+		callbacks.registerContextMenuFactory(this);
 		this.callbacks = callbacks;
 		this.helpers = callbacks.getHelpers();
 	}
@@ -41,7 +51,10 @@ public class BurpExtender implements IBurpExtender, IScannerCheck
 			}
 			IHttpRequestResponse msg = callbacks.applyMarkers(baseMsg,
 					Collections.singletonList(new int[] { m.start(), m.end() }), null);
-			issues.add(new UuidIssue(msg, url, u));
+
+			if (isVersionEnabled(u.version())) {
+				issues.add(new UuidIssue(msg, url, u));
+			}
 		}
 		return issues;
 	}
@@ -55,5 +68,18 @@ public class BurpExtender implements IBurpExtender, IScannerCheck
 	@Override
 	public int consolidateDuplicateIssues(IScanIssue existingIssue, IScanIssue newIssue) {
 		return existingIssue.getIssueDetail().equals(newIssue.getIssueDetail()) ? -1 : 0;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+		return (List<JMenuItem>) (List<? extends JMenuItem>) versionToggles;
+	}
+
+	private boolean isVersionEnabled(int version) {
+		if (version < 1 || version >= versionToggles.size()) {
+			version = versionToggles.size();
+		}
+		return versionToggles.get(version-1).isSelected();
 	}
 }
