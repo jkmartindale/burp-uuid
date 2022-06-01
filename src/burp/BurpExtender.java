@@ -12,14 +12,7 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory, IScanne
 	private final static Pattern uuidPattern = Pattern.compile(
 			"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
 			Pattern.CASE_INSENSITIVE);
-	private final List<ToggleMenuItem> versionToggles = Arrays.asList(
-			new ToggleMenuItem("UUID Version 1", true),
-			new ToggleMenuItem("UUID Version 2", true),
-			new ToggleMenuItem("UUID Version 3", false),
-			new ToggleMenuItem("UUID Version 4", false),
-			new ToggleMenuItem("UUID Version 5", false),
-			new ToggleMenuItem("Unrecognized Versions", false)
-	);
+	private List<ToggleMenuItem> versionToggles;
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -29,6 +22,14 @@ public class BurpExtender implements IBurpExtender, IContextMenuFactory, IScanne
 		callbacks.registerContextMenuFactory(this);
 		this.callbacks = callbacks;
 		this.helpers = callbacks.getHelpers();
+		versionToggles = Arrays.asList(
+				new ToggleMenuItem("UUID Version 1", callbacks, true),
+				new ToggleMenuItem("UUID Version 2", callbacks, true),
+				new ToggleMenuItem("UUID Version 3", callbacks),
+				new ToggleMenuItem("UUID Version 4", callbacks),
+				new ToggleMenuItem("UUID Version 5", callbacks),
+				new ToggleMenuItem("Unrecognized Versions", callbacks)
+		);
 	}
 
 	@Override
